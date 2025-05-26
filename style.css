@@ -216,6 +216,9 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
 #packages-table th { background-color: #f8f9fa; }
 #packages-table td button { background-color: #dc3545; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
+#packages-table td button.edit-package-btn { background-color: #6c757d; margin-right: 5px; }
+
+
 @media (max-width: 768px) {
     #date-navigation h2 { min-width: 130px; }
     #date-navigation button { font-size: 0.8em; }

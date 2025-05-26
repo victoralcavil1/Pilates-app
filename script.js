@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const packagePriceInput = document.getElementById('package-price-input');
     const addPackageButton = document.getElementById('add-package-button');
     const packagesTableBody = document.querySelector('#packages-table tbody');
+
+    let editingPackageId = null;
+
     const exportDataButton = document.getElementById('export-data-button');
     const bookingModal = document.getElementById('booking-modal'); 
     const closeBookingModalButton = document.getElementById('close-booking-modal-button');
@@ -386,18 +389,43 @@ document.addEventListener('DOMContentLoaded', () => {
         packagesTableBody.innerHTML = '';
         packages.forEach(pkg => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${pkg.nombre}</td><td>${pkg.clases}</td><td>${pkg.precio}</td><td><button data-id="${pkg.id}" class="delete-package-btn">🗑️</button></td>`;
+
+            row.innerHTML = `<td>${pkg.nombre}</td><td>${pkg.clases}</td><td>${pkg.precio}</td><td><button data-id="${pkg.id}" class="edit-package-btn">✏️</button> <button data-id="${pkg.id}" class="delete-package-btn">🗑️</button></td>`;
             packagesTableBody.appendChild(row);
         });
     }
+    function openPackagesModal() {
+        editingPackageId = null;
+        addPackageButton.textContent = 'Agregar';
+        packageNameInput.value = '';
+        packageClassesInput.value = '';
+        packagePriceInput.value = '';
+        renderPackagesTable();
+        packagesModal.style.display = 'flex';
+    }
+
+        });
+    }
     function openPackagesModal() { packageNameInput.value = ''; packageClassesInput.value = ''; packagePriceInput.value = ''; renderPackagesTable(); packagesModal.style.display = 'flex'; }
+
     function closePackagesModal() { packagesModal.style.display = 'none'; }
     function addPackageFromForm() {
         const name = packageNameInput.value.trim();
         const classes = parseInt(packageClassesInput.value, 10);
         const price = parseInt(packagePriceInput.value, 10);
         if (!name || isNaN(classes) || isNaN(price)) { showFeedbackMessage('⚠️ Completa todos los campos', 'warning'); return; }
+
+        if (editingPackageId) {
+            const pkg = packages.find(p => p.id === editingPackageId);
+            if (pkg) { pkg.nombre = name; pkg.clases = classes; pkg.precio = price; }
+            editingPackageId = null;
+            addPackageButton.textContent = 'Agregar';
+        } else {
+            packages.push({ id: 'pkg_' + Date.now(), nombre: name, clases: classes, precio: price });
+        }
+
         packages.push({ id: 'pkg_' + Date.now(), nombre: name, clases: classes, precio: price });
+
         savePackages();
         populatePackageDropdown(newClientPackageSelect);
         populatePackageDropdown(editClientNewPackageSelect, false);
@@ -406,14 +434,34 @@ document.addEventListener('DOMContentLoaded', () => {
         packageClassesInput.value = '';
         packagePriceInput.value = '';
     }
+
+    function startEditingPackage(pkgId) {
+        const pkg = packages.find(p => p.id === pkgId);
+        if (pkg) {
+            editingPackageId = pkgId;
+            packageNameInput.value = pkg.nombre;
+            packageClassesInput.value = pkg.clases;
+            packagePriceInput.value = pkg.precio;
+            addPackageButton.textContent = 'Guardar';
+        }
+    }
+    function handlePackagesTableClick(e) {
+        const pkgId = e.target.getAttribute('data-id');
+        if (e.target.classList.contains('delete-package-btn')) {
+
     function handleDeletePackageClick(e) {
         if (e.target.classList.contains('delete-package-btn')) {
             const pkgId = e.target.getAttribute('data-id');
+
             packages = packages.filter(p => p.id !== pkgId);
             savePackages();
             populatePackageDropdown(newClientPackageSelect);
             populatePackageDropdown(editClientNewPackageSelect, false);
             renderPackagesTable();
+
+        } else if (e.target.classList.contains('edit-package-btn')) {
+            startEditingPackage(pkgId);
+
         }
     }
     confirmRepeatWeeklyButton.addEventListener('click', () => {  /* ... */ if (!baseBookingDetailsForRepeat) return; const numWeeks = parseInt(repeatWeeksInput.value); const { clientId, originalDate, time, hourKey, teacherName } = baseBookingDetailsForRepeat; let client = getClientById(clientId); if (isNaN(numWeeks) || numWeeks < 0) { showFeedbackMessage("⚠️ Ingresa un número válido de semanas.", "warning"); return; } if (numWeeks === 0) { showFeedbackMessage("ℹ️ No se agendaron repeticiones.", "info"); closeWeeklyRepeatModal(); return;} if (client.paqueteActivo.clasesRestantes < 1 && numWeeks > 0) { showFeedbackMessage(`⛔ ${client.nombreCliente} no tiene clases disponibles para repetir.`, "error"); return; } let numWeeksToAttempt = numWeeks; if (client.paqueteActivo.clasesRestantes < numWeeks) { if(!confirm(`El cliente solo tiene ${client.paqueteActivo.clasesRestantes} clases. Se intentarán agendar solo ${client.paqueteActivo.clasesRestantes} semanas. ¿Continuar?`)){ return; } numWeeksToAttempt = client.paqueteActivo.clasesRestantes; } confirmRepeatWeeklyButton.disabled = true; weeklyRepeatSummaryReport.innerHTML = '<p>Procesando...</p>'; let successfullyBookedCount = 0; let failedAttemptsLog = []; let clientDataChangedInLoop = false; for (let i = 1; i <= numWeeksToAttempt; i++) {  let nextBookingDate = new Date(originalDate); nextBookingDate.setDate(nextBookingDate.getDate() + (i * 7)); const nextDateKey = formatDate(nextBookingDate); let dayDataForNextWeek = getDayData(nextDateKey); if (!dayDataForNextWeek.activeSlots[hourKey]) { failedAttemptsLog.push(`Sem. ${i} (${getDisplayableDate(nextBookingDate, {day:'numeric', month:'short'})}): Horario no activo.`); continue; } let availableBed = -1; for (let bed = 1; bed <= bedCount; bed++) { if (!dayDataForNextWeek.bookings[`bed${bed}-${hourKey}`]) { availableBed = bed; break; } } if (availableBed === -1) { failedAttemptsLog.push(`Sem. ${i} (${getDisplayableDate(nextBookingDate, {day:'numeric', month:'short'})}): Sin camas libres.`); continue; } if (getClientById(clientId).paqueteActivo.clasesRestantes < 1) { failedAttemptsLog.push(`Sem. ${i} (${getDisplayableDate(nextBookingDate, {day:'numeric', month:'short'})}): Cliente sin clases suficientes.`); break; } dayDataForNextWeek.slotTeachers[hourKey] = teacherName;  dayDataForNextWeek.bookings[`bed${availableBed}-${hourKey}`] = clientId; saveDayData(nextDateKey, dayDataForNextWeek);  if(deductClassFromClient(clientId)) clientDataChangedInLoop = true; successfullyBookedCount++; } if(clientDataChangedInLoop) saveClients(); let summaryHTML = `<p><strong>Resumen:</strong></p><p>Agendadas: <strong>${successfullyBookedCount} clase(s)</strong>.</p>`; if (failedAttemptsLog.length > 0) { summaryHTML += `<p>Fallos (${failedAttemptsLog.length}):</p><ul>`; failedAttemptsLog.forEach(log => summaryHTML += `<li>${log}</li>`); summaryHTML += `</ul>`; } client = getClientById(clientId);  summaryHTML += `<p>A ${client.nombreCliente} le quedan ahora: <strong>${client.paqueteActivo.clasesRestantes} clase(s)</strong>.</p>`; weeklyRepeatSummaryReport.innerHTML = summaryHTML; confirmRepeatWeeklyButton.disabled = false; renderSchedule();  repeatClientClassesRemaining.textContent = client.paqueteActivo.clasesRestantes; const maxSuggest = client.paqueteActivo.clasesRestantes; repeatMaxWeeksSuggestion.textContent = maxSuggest; repeatWeeksInput.max = maxSuggest; if (maxSuggest === 0) repeatWeeksInput.value = 0; showFeedbackMessage("🗓️ Proceso de repetición completado.", "info", 3000); });
@@ -456,7 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
     managePackagesButton.addEventListener('click', openPackagesModal);
     closePackagesModalButton.addEventListener('click', closePackagesModal);
     addPackageButton.addEventListener('click', addPackageFromForm);
+
+    packagesTableBody.addEventListener('click', handlePackagesTableClick);
+
     packagesTableBody.addEventListener('click', handleDeletePackageClick);
+
     backToScheduleButton.addEventListener('click', showScheduleView);
     quickAddClientBtnFromBooking.addEventListener('click', () => { closeBookingModal(); showClientManagementView(); setTimeout(() => newClientNameInput.focus(), 50); });
     exportDataButton.addEventListener('click', openExportDataModal);

@@ -1,0 +1,90 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alizen Pilates - Súper Admin Definitivo v3</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>✨ Alizen Pilates - Súper Agenda ✨</h1>
+        <nav id="date-navigation">
+            <button id="prev-day" title="Día anterior">◀ AYER</button>
+            <h2 id="current-date-display" title="Fecha actual mostrada"></h2>
+            <button id="next-day" title="Día siguiente">MAÑANA ▶</button>
+            <input type="date" id="date-picker" title="Seleccionar fecha específica">
+            <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button> 
+            <button id="export-data-button" title="Exportar datos de clientes y agenda para respaldo">📤 Datos y Respaldo</button>
+        </nav>
+    </header>
+
+    <main id="schedule-view"> 
+        <div id="schedule-container"></div>
+    </main>
+
+    <div id="client-management-view" class="full-view" style="display: none;">
+        <header class="view-header">
+            <h2 class="view-title">👤 Gestión de Clientes</h2>
+            <button id="back-to-schedule-button" class="action-button primary-action" title="Volver a la vista de la agenda principal">🗓️ Volver a la Agenda</button>
+        </header>
+        <div class="client-management-content">
+            <div class="add-client-panel">
+                <h4>➕ Registrar Nuevo Cliente</h4>
+                <div class="modal-input-group"><label for="new-client-name">Nombre Completo:</label><input type="text" id="new-client-name" placeholder="Ej: Ana Pérez" title="Nombre completo del nuevo cliente"></div>
+                <div class="modal-input-group"><label for="new-client-phone">Teléfono (opcional):</label><input type="tel" id="new-client-phone" placeholder="Ej: 8112345678" title="Teléfono del cliente"></div>
+                <div class="modal-input-group"><label for="new-client-email">Correo (opcional):</label><input type="email" id="new-client-email" placeholder="Ej: ana@correo.com" title="Correo electrónico del cliente"></div>
+                <div class="modal-input-group"><label for="new-client-package">Paquete Comprado:</label><select id="new-client-package" title="Seleccione el paquete de clases que el cliente ha comprado"></select></div>
+                <div class="modal-input-group"><label for="new-client-purchase-date">Fecha de Compra:</label><input type="date" id="new-client-purchase-date" title="Fecha de compra del paquete (por defecto hoy)"></div>
+                <button id="save-new-client-button" class="action-button success-action full-width-button" title="Guardar los datos del nuevo cliente y su paquete">💾 Guardar Nuevo Cliente</button>
+            </div>
+            <div class="view-clients-panel">
+                <h4>📋 Listado de Clientes Registrados</h4>
+                <input type="text" id="search-client-input" placeholder="Buscar por nombre o Nº de cliente..." title="Escriba para filtrar la lista de clientes">
+                <div class="clients-table-container">
+                    <table id="clients-table">
+                        <thead>
+                            <tr>
+                                <th title="Número de cliente">Nº</th>
+                                <th title="Nombre del cliente">Nombre</th>
+                                <th title="Teléfono del cliente">Teléfono</th>
+                                <th title="Correo del cliente">Correo</th>
+                                <th title="Paquete actual">Paquete Actual</th>
+                                <th title="Clases disponibles">Clases Disp.</th>
+                                <th title="Clases ya agendadas">Clases Agend. (Futuras)</th>
+                                <th title="Fecha de última compra/recarga">Últ. Compra</th>
+                                <th title="Acciones disponibles">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clients-list-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="quick-help-button" class="quick-help-button" title="Mostrar ayuda rápida">❔</button>
+    <div id="feedback-overlay" class="feedback-overlay"><div id="feedback-message-box"><span id="feedback-message"></span></div></div>
+
+    <div id="booking-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-booking-modal-button" title="Cerrar">&times;</span><h3 id="modal-title">Gestionar Reserva y Maestro de Hora</h3><p id="modal-info"></p><div class="modal-input-group"><label for="modal-hour-teacher-input">Maestro(a) para TODA la hora de las <span id="modal-teacher-hour-ref"></span>:</label><input type="text" id="modal-hour-teacher-input" placeholder="Nombre maestro (opcional)" title="Maestro para esta franja horaria"></div><div class="modal-input-group"><label for="modal-select-client">Cliente para esta Cama:</label><select id="modal-select-client" title="Seleccionar cliente con clases disponibles"></select><button type="button" id="quick-add-client-button-from-booking" class="inline-button" title="Registrar nuevo cliente">+ Registrar Cliente</button></div><div id="modal-client-package-info" class="client-package-info-display"></div><div class="modal-actions main-actions"><button id="save-booking-button" title="Guardar cambios de maestro y cliente">✅ GUARDAR TODO</button><button id="delete-booking-button" class="delete" title="Liberar esta cama">🗑️ LIBERAR CAMA</button></div><div class="modal-actions secondary-actions"><button id="generate-reminder-button" class="action-button whatsapp-reminder" style="display: none;" title="Generar recordatorio para WhatsApp">📱 Generar Recordatorio</button><button id="repeat-weekly-button" class="action-button repeat-action" style="display: none;" title="Repetir esta clase semanalmente">🔁 Repetir Semanalmente</button></div></div></div>
+    <div id="summary-text-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-summary-modal-button" title="Cerrar">&times;</span><h3 id="summary-modal-title">Disponibilidad para Clientes</h3><div id="whatsapp-summary-text-container"><p>Copia este mensaje y pégalo en WhatsApp:</p><pre id="whatsapp-summary-text"></pre></div><div class="modal-actions"><button id="copy-summary-button" title="Copiar mensaje">📋 Copiar Mensaje</button></div></div></div>
+    <div id="quick-help-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-quick-help-modal-button" title="Cerrar">&times;</span><h3 class="help-modal-title">💡 Ayuda Rápida - Alizen Pilates</h3><ul class="help-list"><li><strong class="help-purple">👤 Clientes:</strong> (Vista Completa) Agrega, busca, edita/recarga paquetes, ve clases agendadas.</li><li><strong class="help-red">🟩 Casilla:</strong> Toca para asignar maestro de hora y cliente (con clases disponibles).</li><li><strong class="help-grey">🔘 Etiqueta de Hora:</strong> Toca para activar/desactivar el horario completo.</li><li><strong class="help-blue">📝 Ver Disponibilidad / 📤 Datos y Respaldo:</strong> Exportar info.</li><li><strong>📅 Navegación de Fecha:</strong> Cambia de día.</li></ul></div></div>
+    <div id="slot-status-config-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-slot-status-config-modal-button" title="Cerrar">&times;</span><h3 id="slot-status-config-modal-title">Activar/Desactivar Horario de las <span id="slot-status-config-time-display"></span></h3><p>Maestro(a) actual para esta hora: <strong id="slot-status-effective-teacher"></strong></p><div class="config-section"><label>Estado actual del horario:</label><button id="toggle-slot-active-status-button" title="Cambiar estado">Desactivar Horario</button><small id="slot-active-status-text-display">Actualmente: ACTIVO</small></div><div class="modal-actions"><button id="save-slot-status-config-button" class="action-button" title="Guardar estado">💾 Guardar Estado</button></div></div></div>
+    <div id="reminder-text-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-reminder-text-modal-button" title="Cerrar">&times;</span><h3 id="reminder-modal-title">Recordatorio para Cliente</h3><div id="reminder-text-container"><p>Copia este mensaje y pégalo en WhatsApp:</p><pre id="reminder-text-content"></pre></div><div class="modal-actions"><button id="copy-reminder-message-button" title="Copiar recordatorio">📋 Copiar Mensaje</button></div></div></div>
+    <div id="weekly-repeat-modal" class="modal"><div class="modal-content small"><span class="close-button" id="close-weekly-repeat-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">Repetir Clase Semanalmente</h3><div id="weekly-repeat-info"><p>Cliente: <strong id="repeat-client-name"></strong></p><p>Clase Base: <strong id="repeat-class-details"></strong></p><p>Clases Restantes: <strong id="repeat-client-classes-remaining"></strong></p></div><div class="modal-input-group"><label for="repeat-weeks-input">Agendar esta misma clase para las siguientes semanas:</label><input type="number" id="repeat-weeks-input" min="0" value="1" title="Número de semanas adicionales. 0 = no repetir."><small>(0 = no repetir adicionalmente)</small><small>Máximo de repeticiones adicionales sugerido: <span id="repeat-max-weeks-suggestion">0</span></small></div><div class="modal-actions"><button id="confirm-repeat-weekly-button" class="action-button" title="Agendar repeticiones">🗓️ Agendar Repeticiones</button></div><div id="weekly-repeat-summary-report"></div></div></div>
+    
+    <div id="edit-client-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-edit-client-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">Editar Cliente / Actualizar Paquete</h3><input type="hidden" id="edit-client-id"><div class="modal-input-group readonly-group"><label>Número de Cliente:</label><p id="edit-client-visible-id-display"></p></div><div class="modal-input-group"><label for="edit-client-name">Nombre del Cliente:</label><input type="text" id="edit-client-name" placeholder="Nombre del cliente" title="Editar nombre del cliente"></div><div class="modal-input-group"><label for="edit-client-phone">Teléfono (opcional):</label><input type="tel" id="edit-client-phone" placeholder="Teléfono"></div><div class="modal-input-group"><label for="edit-client-email">Correo (opcional):</label><input type="email" id="edit-client-email" placeholder="Correo electrónico"></div><hr><h4>Paquete Actual:</h4><div id="edit-client-current-package-info" class="client-package-info-display" style="margin-bottom: 15px;"></div><hr><h4>✨ Registrar Nuevo Paquete / Recarga ✨</h4><div class="modal-input-group"><label for="edit-client-new-package">Nuevo Paquete Comprado:</label><select id="edit-client-new-package" title="Seleccionar nuevo paquete para sumar clases"><option value="">-- No cambiar/agregar paquete --</option></select></div><div class="modal-input-group"><label for="edit-client-new-package-purchase-date">Fecha de Compra (Nuevo Paquete):</label><input type="date" id="edit-client-new-package-purchase-date" title="Fecha de compra del nuevo paquete"></div><div class="modal-input-group"><label for="edit-client-payment-method">Método de Pago (Nuevo Paquete):</label><select id="edit-client-payment-method" title="Método de pago"><option value="">-- Seleccionar --</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option><option value="Otro">Otro</option></select></div><div class="modal-input-group"><label for="edit-client-payment-reference">Referencia de Pago (Nuevo Paquete, opcional):</label><input type="text" id="edit-client-payment-reference" placeholder="Ej: Últimos 4 dígitos, folio" title="Referencia del pago"></div><div class="modal-actions"><button id="update-client-package-button" class="action-button" title="Guardar cambios y/o aplicar nuevo paquete">🔄 Guardar Cambios</button></div></div></div>
+    <div id="export-data-modal" class="modal"><div class="modal-content wide"><span class="close-button" id="close-export-data-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">📤 Exportar Datos / Respaldo</h3><div class="export-section-container"><div class="export-section"><h4>Respaldo de Clientes</h4><button id="export-clients-readable-button" class="action-button info-action" title="Generar lista legible de clientes para ver/imprimir">📄 Generar Lista Legible de Clientes</button><button id="export-clients-json-button" class="action-button" title="Generar JSON con datos de clientes para respaldo técnico">💾 Respaldo Técnico Clientes (JSON)</button><small class="backup-note">(El Respaldo Técnico es para recuperación completa por personal técnico)</small></div><hr class="section-divider"><div class="export-section"><h4>Respaldo de Agenda (Camas Ocupadas)</h4><div class="modal-input-group"><label for="export-agenda-period-select">Seleccionar Periodo:</label><select id="export-agenda-period-select" title="Rango de fechas para exportar agenda"><option value="next7days">Próximos 7 días</option><option value="next30days">Próximos 30 días</option><option value="currentMonth">Mes Actual</option><option value="nextMonth">Mes Siguiente</option></select></div><button id="export-agenda-readable-button" class="action-button info-action" title="Generar resumen legible de agenda ocupada">📄 Generar Resumen Legible de Agenda</button><button id="export-agenda-json-button" class="action-button" title="Generar JSON con datos de agenda para respaldo técnico">💾 Respaldo Técnico Agenda (JSON)</button></div></div><hr class="section-divider"><div class="export-display-area"><label for="exported-data-textarea">Datos Generados (seleccionar todo y copiar):</label><textarea id="exported-data-textarea" readonly rows="10" title="Aquí aparecerán los datos. Selecciona (Ctrl+A) y copia (Ctrl+C)."></textarea><button id="copy-exported-data-button" class="action-button primary-action full-width-button" title="Intentar copiar texto al portapapeles">📋 Copiar Texto Generado</button></div></div></div>
+
+    <div id="view-booked-classes-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-view-booked-classes-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">Clases Agendadas para <span id="view-booked-client-name"></span></h3>
+            <div id="booked-classes-list-container" class="booked-classes-list">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

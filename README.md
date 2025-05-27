@@ -14,6 +14,19 @@ Toda la información se guarda en el navegador mediante *localStorage*.
 
 - Agenda diaria de horarios y camas.
 - Registro de clientes con paquetes de clases.
+
+
+- Configuración de paquetes de clases desde la interfaz.
+
+
+- Gestión de paquetes personalizables desde la interfaz.
+
+
+- Configuración y edición de paquetes de clases desde la interfaz.
+
+
+
+
 - Exportación manual de datos para respaldo.
 
 ## Próximas mejoras (versión 2.0)

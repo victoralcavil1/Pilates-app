@@ -74,10 +74,27 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
 #clients-table td .client-actions button { margin: 0; padding: 5px 8px; font-size: 0.85em; flex-grow: 1; }
 #clients-table tr:nth-child(even) { background-color: #f9f9f9; }
 #clients-table tr:hover { background-color: #f1f1f1; }
-#clients-table td.classes-remaining-cell.no-classes strong { color: #dc3545 !important; font-weight: bold; } 
+#clients-table td.classes-remaining-cell.no-classes strong { color: #dc3545 !important; font-weight: bold; }
 #clients-table td.classes-remaining-cell.has-classes strong { color: #28a745 !important; font-weight: bold; }
 #clients-table td.future-bookings-cell ul { margin: 0; padding-left: 15px; font-size: 0.9em; } /* Para la lista de clases agendadas */
+
 #clients-table td.future-bookings-cell ul li { margin-bottom: 2px; }
+
+#packages-table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px; }
+#packages-table th, #packages-table td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+#packages-table th { background-color: #f8f9fa; font-weight: 600; }
+#packages-table td button.delete-package-btn { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+
+#clients-table td.future-bookings-cell ul li { margin-bottom: 2px; }
+
+/* Tabla de paquetes */
+#packages-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+#packages-table th, #packages-table td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+#packages-table th { background-color: #f8f9fa; font-weight: 600; }
+#packages-table td.actions { text-align: center; }
+#packages-table button.delete-package-button { background-color: #dc3545; color: white; border:none; border-radius: 4px; padding: 4px 8px; cursor:pointer; font-size: 0.85em; }
+
 
 .action-button.success-action { background-color: #28a745; color: white; }
 .action-button.success-action:hover { background-color: #218838; }
@@ -205,6 +222,7 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
 #booked-classes-list-container li:last-child {
     border-bottom: none;
 }
+
 #booked-classes-list-container .no-booked-classes {
     text-align: center;
     color: #6c757d;
@@ -246,3 +264,99 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
     #date-picker { font-size: 0.75em; }
     .slot { min-height: 50px; }
 }
+
+
+#booked-classes-list-container .no-booked-classes {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+}
+
+/* Estilos para la gestión de paquetes */
+#packages-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+#packages-table th, #packages-table td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+#packages-table td:last-child { text-align: center; }
+.delete-package-button { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+.delete-package-button:hover { background-color: #c82333; }
+.packages-table-container { max-height: 50vh; overflow-y: auto; margin-top: 10px; }
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+
+#booked-classes-list-container .no-booked-classes {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+}
+
+#packages-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+#packages-table th, #packages-table td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+#packages-table th { background-color: #f8f9fa; }
+#packages-table td button { background-color: #dc3545; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+@media (max-width: 768px) {
+    #date-navigation h2 { min-width: 130px; }
+    #date-navigation button { font-size: 0.8em; }
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+#booked-classes-list-container .no-booked-classes {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+}
+
+#packages-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+#packages-table th, #packages-table td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+#packages-table th { background-color: #f8f9fa; }
+#packages-table td button { background-color: #dc3545; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+#packages-table td button.edit-package-btn { background-color: #6c757d; margin-right: 5px; }
+
+
+@media (max-width: 768px) {
+    #date-navigation h2 { min-width: 130px; }
+    #date-navigation button { font-size: 0.8em; }
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+
+
+

@@ -13,9 +13,37 @@
             <h2 id="current-date-display" title="Fecha actual mostrada"></h2>
             <button id="next-day" title="Día siguiente">MAÑANA ▶</button>
             <input type="date" id="date-picker" title="Seleccionar fecha específica">
+
             <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
             <button id="manage-packages-button" title="Gestionar Paquetes de Clases">⚙️ Paquetes</button>
             <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
+
+
+            <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
+            <button id="manage-packages-button" title="Gestionar paquetes disponibles">⚙️ Paquetes</button>
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
+
+
+            <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
+            <button id="manage-packages-button" title="Gestionar Paquetes">⚙️ Paquetes</button>
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
+
+
+            <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
+            <button id="manage-packages-button" title="Configurar Paquetes disponibles">⚙️ Paquetes</button>
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
+
+            <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
+
+            <button id="manage-packages-button" title="Gestionar Paquetes de Clases">⚙️ Paquetes</button>
+
+            <button id="manage-packages-button" title="Configurar Paquetes disponibles">⚙️ Paquetes</button>
+
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
+
+
+
+
             <button id="export-data-button" title="Exportar datos de clientes y agenda para respaldo">📤 Datos y Respaldo</button>
         </nav>
     </header>
@@ -78,6 +106,8 @@
     
     <div id="edit-client-modal" class="modal"><div class="modal-content"><span class="close-button" id="close-edit-client-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">Editar Cliente / Actualizar Paquete</h3><input type="hidden" id="edit-client-id"><div class="modal-input-group readonly-group"><label>Número de Cliente:</label><p id="edit-client-visible-id-display"></p></div><div class="modal-input-group"><label for="edit-client-name">Nombre del Cliente:</label><input type="text" id="edit-client-name" placeholder="Nombre del cliente" title="Editar nombre del cliente"></div><div class="modal-input-group"><label for="edit-client-phone">Teléfono (opcional):</label><input type="tel" id="edit-client-phone" placeholder="Teléfono"></div><div class="modal-input-group"><label for="edit-client-email">Correo (opcional):</label><input type="email" id="edit-client-email" placeholder="Correo electrónico"></div><hr><h4>Paquete Actual:</h4><div id="edit-client-current-package-info" class="client-package-info-display" style="margin-bottom: 15px;"></div><hr><h4>✨ Registrar Nuevo Paquete / Recarga ✨</h4><div class="modal-input-group"><label for="edit-client-new-package">Nuevo Paquete Comprado:</label><select id="edit-client-new-package" title="Seleccionar nuevo paquete para sumar clases"><option value="">-- No cambiar/agregar paquete --</option></select></div><div class="modal-input-group"><label for="edit-client-new-package-purchase-date">Fecha de Compra (Nuevo Paquete):</label><input type="date" id="edit-client-new-package-purchase-date" title="Fecha de compra del nuevo paquete"></div><div class="modal-input-group"><label for="edit-client-payment-method">Método de Pago (Nuevo Paquete):</label><select id="edit-client-payment-method" title="Método de pago"><option value="">-- Seleccionar --</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option><option value="Otro">Otro</option></select></div><div class="modal-input-group"><label for="edit-client-payment-reference">Referencia de Pago (Nuevo Paquete, opcional):</label><input type="text" id="edit-client-payment-reference" placeholder="Ej: Últimos 4 dígitos, folio" title="Referencia del pago"></div><div class="modal-actions"><button id="update-client-package-button" class="action-button" title="Guardar cambios y/o aplicar nuevo paquete">🔄 Guardar Cambios</button></div></div></div>
     <div id="export-data-modal" class="modal"><div class="modal-content wide"><span class="close-button" id="close-export-data-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">📤 Exportar Datos / Respaldo</h3><div class="export-section-container"><div class="export-section"><h4>Respaldo de Clientes</h4><button id="export-clients-readable-button" class="action-button info-action" title="Generar lista legible de clientes para ver/imprimir">📄 Generar Lista Legible de Clientes</button><button id="export-clients-json-button" class="action-button" title="Generar JSON con datos de clientes para respaldo técnico">💾 Respaldo Técnico Clientes (JSON)</button><small class="backup-note">(El Respaldo Técnico es para recuperación completa por personal técnico)</small></div><hr class="section-divider"><div class="export-section"><h4>Respaldo de Agenda (Camas Ocupadas)</h4><div class="modal-input-group"><label for="export-agenda-period-select">Seleccionar Periodo:</label><select id="export-agenda-period-select" title="Rango de fechas para exportar agenda"><option value="next7days">Próximos 7 días</option><option value="next30days">Próximos 30 días</option><option value="currentMonth">Mes Actual</option><option value="nextMonth">Mes Siguiente</option></select></div><button id="export-agenda-readable-button" class="action-button info-action" title="Generar resumen legible de agenda ocupada">📄 Generar Resumen Legible de Agenda</button><button id="export-agenda-json-button" class="action-button" title="Generar JSON con datos de agenda para respaldo técnico">💾 Respaldo Técnico Agenda (JSON)</button></div></div><hr class="section-divider"><div class="export-display-area"><label for="exported-data-textarea">Datos Generados (seleccionar todo y copiar):</label><textarea id="exported-data-textarea" readonly rows="10" title="Aquí aparecerán los datos. Selecciona (Ctrl+A) y copia (Ctrl+C)."></textarea><button id="copy-exported-data-button" class="action-button primary-action full-width-button" title="Intentar copiar texto al portapapeles">📋 Copiar Texto Generado</button></div></div></div>
+<div id="packages-modal" class="modal"><div class="modal-content wide"><span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span><h3 class="modal-title">Gestionar Paquetes</h3><table id="packages-table"><thead><tr><th>Nombre</th><th>Clases</th><th>Precio</th><th>Acciones</th></tr></thead><tbody id="packages-table-body"></tbody></table><div class="modal-input-group"><label for="package-name-input">Nombre:</label><input type="text" id="package-name-input"></div><div class="modal-input-group"><label for="package-classes-input">Clases:</label><input type="number" id="package-classes-input" min="1"></div><div class="modal-input-group"><label for="package-price-input">Precio:</label><input type="number" id="package-price-input" min="0"></div><div class="modal-actions"><button id="add-package-button" class="action-button success-action">➕ Agregar Paquete</button></div></div></div>
+
 
     <div id="view-booked-classes-modal" class="modal">
         <div class="modal-content">
@@ -88,6 +118,99 @@
         </div>
     </div>
 
+    <div id="packages-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">⚙️ Gestionar Paquetes</h3>
+            <div class="modal-input-group">
+                <label for="package-name">Nombre del Paquete:</label>
+                <input type="text" id="package-name">
+            </div>
+            <div class="modal-input-group">
+                <label for="package-classes">Número de Clases:</label>
+                <input type="number" id="package-classes" min="1">
+            </div>
+            <div class="modal-input-group">
+                <label for="package-price">Precio:</label>
+                <input type="number" id="package-price" min="0">
+            </div>
+            <button id="add-package-button" class="action-button success-action">➕ Agregar</button>
+            <div class="packages-table-container">
+                <table id="packages-table">
+                    <thead>
+                        <tr><th>Nombre</th><th>Clases</th><th>Precio</th><th></th></tr>
+                    </thead>
+                    <tbody id="packages-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
+
+    <div id="view-booked-classes-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-view-booked-classes-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">Clases Agendadas para <span id="view-booked-client-name"></span></h3>
+            <div id="booked-classes-list-container" class="booked-classes-list">
+                </div>
+        </div>
+
+    </div>
+
+    <div id="packages-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">⚙️ Gestión de Paquetes</h3>
+            <div class="modal-input-group"><label for="package-name-input">Nombre:</label><input type="text" id="package-name-input"></div>
+            <div class="modal-input-group"><label for="package-classes-input">Clases:</label><input type="number" id="package-classes-input" min="1"></div>
+            <div class="modal-input-group"><label for="package-price-input">Precio:</label><input type="number" id="package-price-input" min="0" step="1"></div>
+            <div class="modal-actions"><button id="add-package-button" class="action-button success-action">Agregar</button></div>
+            <table id="packages-table"><thead><tr><th>Nombre</th><th>Clases</th><th>Precio</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+
+    </div>
+
+    <div id="packages-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">Gestionar Paquetes</h3>
+            <table id="packages-table">
+                <thead>
+                    <tr><th>Nombre</th><th>Clases</th><th>Precio</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="modal-input-group"><label for="package-name-input">Nombre:</label><input type="text" id="package-name-input"></div>
+            <div class="modal-input-group"><label for="package-classes-input">Clases:</label><input type="number" id="package-classes-input" min="1"></div>
+            <div class="modal-input-group"><label for="package-price-input">Precio:</label><input type="number" id="package-price-input" min="0"></div>
+            <div class="modal-actions main-actions"><button id="add-package-button" class="action-button success-action">Agregar Paquete</button></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+    </div>
+
+    <div id="packages-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">⚙️ Gestión de Paquetes</h3>
+            <div class="modal-input-group"><label for="package-name-input">Nombre:</label><input type="text" id="package-name-input"></div>
+            <div class="modal-input-group"><label for="package-classes-input">Clases:</label><input type="number" id="package-classes-input" min="1"></div>
+            <div class="modal-input-group"><label for="package-price-input">Precio:</label><input type="number" id="package-price-input" min="0" step="1"></div>
+            <div class="modal-actions"><button id="add-package-button" class="action-button success-action">Agregar</button></div>
+            <table id="packages-table"><thead><tr><th>Nombre</th><th>Clases</th><th>Precio</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+
+
 </html>

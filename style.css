@@ -77,6 +77,15 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
 #clients-table td.classes-remaining-cell.no-classes strong { color: #dc3545 !important; font-weight: bold; }
 #clients-table td.classes-remaining-cell.has-classes strong { color: #28a745 !important; font-weight: bold; }
 #clients-table td.future-bookings-cell ul { margin: 0; padding-left: 15px; font-size: 0.9em; } /* Para la lista de clases agendadas */
+
+#clients-table td.future-bookings-cell ul li { margin-bottom: 2px; }
+
+#packages-table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 10px; }
+#packages-table th, #packages-table td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+#packages-table th { background-color: #f8f9fa; font-weight: 600; }
+#packages-table td button.delete-package-btn { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+
 #clients-table td.future-bookings-cell ul li { margin-bottom: 2px; }
 
 /* Tabla de paquetes */
@@ -85,6 +94,7 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
 #packages-table th { background-color: #f8f9fa; font-weight: 600; }
 #packages-table td.actions { text-align: center; }
 #packages-table button.delete-package-button { background-color: #dc3545; color: white; border:none; border-radius: 4px; padding: 4px 8px; cursor:pointer; font-size: 0.85em; }
+
 
 .action-button.success-action { background-color: #28a745; color: white; }
 .action-button.success-action:hover { background-color: #218838; }
@@ -217,6 +227,16 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
     text-align: center;
     color: #6c757d;
     padding: 20px;
+
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
 }
 
 #packages-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
@@ -271,5 +291,6 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
     #date-picker { font-size: 0.75em; }
     .slot { min-height: 50px; }
 }
+
 
 

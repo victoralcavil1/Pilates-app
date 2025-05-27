@@ -210,3 +210,18 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
     color: #6c757d;
     padding: 20px;
 }
+
+/* Estilos para la gestión de paquetes */
+#packages-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+#packages-table th, #packages-table td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+#packages-table td:last-child { text-align: center; }
+.delete-package-button { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+.delete-package-button:hover { background-color: #c82333; }
+.packages-table-container { max-height: 50vh; overflow-y: auto; margin-top: 10px; }
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}

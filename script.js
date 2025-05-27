@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const eveningHours = [16, 17, 18, 19, 20]; 
     const allTimeSlots = [...morningHours, ...eveningHours].sort((a, b) => a - b);
 
-    const PREDEFINED_PACKAGES = [
+    const DEFAULT_PACKAGES = [
         { id: 'prueba', nombre: "Clase de prueba", clases: 1, precio: 150 },
         { id: 'clase1', nombre: "1 Clase", clases: 1, precio: 200 },
         { id: 'clases4', nombre: "4 Clases", clases: 4, precio: 790 },
@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'clases16', nombre: "16 Clases", clases: 16, precio: 2500 },
         { id: 'clases20', nombre: "20 Clases", clases: 20, precio: 2740 }
     ];
+    const LS_PACKAGES_KEY = "ALIZENPILATES_PACKAGES";
+    let packages = [];
 
     let currentDate = new Date(); 
     let clients = []; 
@@ -31,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const datePicker = document.getElementById('date-picker');
     const scheduleContainer = document.getElementById('schedule-container');
     const showSummaryButton = document.getElementById('show-summary-button');
-    const manageClientsButton = document.getElementById('manage-clients-button'); 
+    const manageClientsButton = document.getElementById('manage-clients-button');
+    const managePackagesButton = document.getElementById('manage-packages-button');
     const exportDataButton = document.getElementById('export-data-button');
     const bookingModal = document.getElementById('booking-modal'); 
     const closeBookingModalButton = document.getElementById('close-booking-modal-button');
@@ -113,6 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportedDataTextarea = document.getElementById('exported-data-textarea');
     const copyExportedDataButton = document.getElementById('copy-exported-data-button');
 
+    // Elementos para la gestión de paquetes
+    const packagesModal = document.getElementById('packages-modal');
+    const closePackagesModalButton = document.getElementById('close-packages-modal-button');
+    const packageNameInput = document.getElementById('package-name');
+    const packageClassesInput = document.getElementById('package-classes');
+    const packagePriceInput = document.getElementById('package-price');
+    const addPackageButton = document.getElementById('add-package-button');
+    const packagesTableBody = document.getElementById('packages-table-body');
+
     let currentEditingSlotData = null; 
     let currentConfiguringHourForStatus = null; 
     let baseBookingDetailsForRepeat = null;
@@ -127,7 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function showFeedbackMessage(messageText, type = 'info', duration = 2500) { feedbackMessage.textContent = messageText; feedbackMessageBox.className = ''; feedbackMessageBox.classList.add(type); feedbackOverlay.classList.add('show'); setTimeout(() => { feedbackOverlay.classList.remove('show'); }, duration); }
     function generateClientId() { return 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
     function generateNextVisibleClientId() { let nextId = 101; if (clients.length > 0) { const existingIds = clients.map(c => c.numeroClienteVisible || 0).filter(id => id > 0); if (existingIds.length > 0) { const maxId = Math.max(...existingIds); if (maxId >= nextId) nextId = maxId + 1; } } return nextId; }
-    function populatePackageDropdown(selectElement, addDefaultOption = true) { if (!PREDEFINED_PACKAGES) { console.error("PREDEFINED_PACKAGES no está definido."); return; } selectElement.innerHTML = addDefaultOption ? '<option value="">-- Seleccionar Paquete --</option>' : ''; PREDEFINED_PACKAGES.forEach(pkg => { const option = document.createElement('option'); option.value = pkg.id; option.textContent = `${pkg.nombre} (${pkg.clases} clase${pkg.clases > 1 ? 's' : ''})`; selectElement.appendChild(option); }); }
+    function populatePackageDropdown(selectElement, addDefaultOption = true) {
+        if (!packages) { console.error("packages no está definido."); return; }
+        selectElement.innerHTML = addDefaultOption ? '<option value="">-- Seleccionar Paquete --</option>' : '';
+        packages.forEach(pkg => {
+            const option = document.createElement('option');
+            option.value = pkg.id;
+            option.textContent = `${pkg.nombre} (${pkg.clases} clase${pkg.clases > 1 ? 's' : ''})`;
+            selectElement.appendChild(option);
+        });
+    }
     
     // --- MANEJO DE DATOS DEL DÍA (LocalStorage) ---
     function getDayData(dateKey) { const dataString = localStorage.getItem(LS_PREFIX_DAY + dateKey); let data = { slotTeachers: {}, activeSlots: {}, bookings: {} }; if (dataString) { try { const parsedData = JSON.parse(dataString); data.slotTeachers = parsedData.slotTeachers || {}; data.activeSlots = parsedData.activeSlots || {}; data.bookings = parsedData.bookings || {}; } catch (e) { console.error("Error al parsear datos del día:", dateKey, e); } } allTimeSlots.forEach(hour => { const hourKey = formatHourForSlotKey(hour); if (typeof data.activeSlots[hourKey] === 'undefined') data.activeSlots[hourKey] = true; if (typeof data.slotTeachers[hourKey] === 'undefined') data.slotTeachers[hourKey] = ""; }); return data; }
@@ -139,6 +160,69 @@ document.addEventListener('DOMContentLoaded', () => {
     function getClientById(clientId) { return clients.find(c => c.idUnicoCliente === clientId); }
     function deductClassFromClient(clientId) { const clientIndex = clients.findIndex(c => c.idUnicoCliente === clientId); if (clientIndex > -1 && clients[clientIndex].paqueteActivo && clients[clientIndex].paqueteActivo.clasesRestantes > 0) { clients[clientIndex].paqueteActivo.clasesRestantes--; return true; } return false; }
     function refundClassToClient(clientId) { const clientIndex = clients.findIndex(c => c.idUnicoCliente === clientId); if (clientIndex > -1 && clients[clientIndex].paqueteActivo) { clients[clientIndex].paqueteActivo.clasesRestantes++; return true; } return false; }
+
+    // --- MANEJO DE PAQUETES (LocalStorage) ---
+    function loadPackages() {
+        const packagesString = localStorage.getItem(LS_PACKAGES_KEY);
+        if (packagesString) {
+            try { packages = JSON.parse(packagesString); }
+            catch (e) { packages = [...DEFAULT_PACKAGES]; }
+        } else {
+            packages = [...DEFAULT_PACKAGES];
+        }
+    }
+    function savePackages() {
+        try { localStorage.setItem(LS_PACKAGES_KEY, JSON.stringify(packages)); }
+        catch (e) { console.error('Error al guardar paquetes:', e); }
+    }
+
+    function renderPackagesTable() {
+        packagesTableBody.innerHTML = '';
+        packages.forEach(pkg => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${pkg.nombre}</td><td>${pkg.clases}</td><td>$${pkg.precio}</td><td><button class="delete-package-button" data-id="${pkg.id}">Eliminar</button></td>`;
+            packagesTableBody.appendChild(tr);
+        });
+        packagesTableBody.querySelectorAll('.delete-package-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                packages = packages.filter(p => p.id !== id);
+                savePackages();
+                renderPackagesTable();
+                populatePackageDropdown(newClientPackageSelect);
+                populatePackageDropdown(editClientNewPackageSelect, false);
+            });
+        });
+    }
+
+    function openPackagesModal() {
+        renderPackagesTable();
+        packagesModal.style.display = 'flex';
+        packageNameInput.focus();
+    }
+
+    function closePackagesModal() {
+        packagesModal.style.display = 'none';
+    }
+
+    function addPackageFromModal() {
+        const name = packageNameInput.value.trim();
+        const classes = parseInt(packageClassesInput.value, 10);
+        const price = parseFloat(packagePriceInput.value);
+        if (!name || isNaN(classes) || classes <= 0 || isNaN(price) || price < 0) {
+            showFeedbackMessage('⚠️ Datos de paquete inválidos', 'warning');
+            return;
+        }
+        const id = 'pkg' + Date.now();
+        packages.push({ id, nombre: name, clases: classes, precio: price });
+        savePackages();
+        packageNameInput.value = '';
+        packageClassesInput.value = '';
+        packagePriceInput.value = '';
+        renderPackagesTable();
+        populatePackageDropdown(newClientPackageSelect);
+        populatePackageDropdown(editClientNewPackageSelect, false);
+    }
     function getEffectiveTeacherForSlot(hourKey, dayData) { const slotSpecificTeacher = dayData.slotTeachers[hourKey]; if (slotSpecificTeacher && slotSpecificTeacher.trim() !== "") return slotSpecificTeacher; return ""; }
     
     function showScheduleView() { scheduleView.style.display = 'block'; clientManagementView.style.display = 'none'; renderSchedule();  }
@@ -195,12 +279,53 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function renderSchedule() { /* ... Misma lógica de renderSchedule ... */  scheduleContainer.innerHTML = ''; const dateKey = formatDate(currentDate); const dayData = getDayData(dateKey); const bookings = dayData.bookings; const activeSlots = dayData.activeSlots; const actualSystemDate = new Date(); const currentSystemHour = actualSystemDate.getHours(); const isViewingToday = (formatDate(currentDate) === formatDate(actualSystemDate)); const timeHeader = document.createElement('div'); timeHeader.className = 'grid-header time-slot-header'; timeHeader.textContent = 'Hora'; scheduleContainer.appendChild(timeHeader); for (let i = 1; i <= bedCount; i++) { const bedH = document.createElement('div'); bedH.className = 'grid-header bed-header'; bedH.textContent = `Cama ${i}`; scheduleContainer.appendChild(bedH); } allTimeSlots.forEach(hour => { const hourKey = formatHourForSlotKey(hour); const isSlotActive = activeSlots[hourKey]; const timeLabel = document.createElement('div'); timeLabel.className = 'time-slot-label'; timeLabel.textContent = formatTimeForDisplay(hour); if (!isSlotActive) timeLabel.classList.add('inactive'); timeLabel.title = `Clic para Activar/Desactivar el horario de las ${formatTimeForDisplay(hour)}`; timeLabel.addEventListener('click', () => openSlotStatusConfigModal(hour)); scheduleContainer.appendChild(timeLabel); for (let bed = 1; bed <= bedCount; bed++) { const slot = document.createElement('div'); const slotId = `bed${bed}-${hourKey}`; slot.classList.add('slot'); slot.dataset.bed = bed; slot.dataset.time = hour; const bookedClientId = bookings[slotId]; const effectiveTeacherName = getEffectiveTeacherForSlot(hourKey, dayData); slot.innerHTML = '';  if (bookedClientId) { const client = getClientById(bookedClientId); const clientNameForDisplay = client ? client.nombreCliente : "Cliente Desconocido"; slot.classList.add('occupied'); const clientSpan = document.createElement('span'); clientSpan.className = 'client-name-display'; clientSpan.textContent = clientNameForDisplay; slot.appendChild(clientSpan); if (effectiveTeacherName) { const teacherSpan = document.createElement('span'); teacherSpan.className = 'teacher-in-slot-display'; teacherSpan.textContent = `(Prof: ${effectiveTeacherName})`; slot.appendChild(teacherSpan); } } else if (effectiveTeacherName && isSlotActive) { slot.classList.remove('occupied'); const teacherSpan = document.createElement('span'); teacherSpan.className = 'teacher-in-slot-display'; teacherSpan.textContent = `(Prof: ${effectiveTeacherName})`; slot.appendChild(teacherSpan); } else { slot.classList.remove('occupied'); } if (!isSlotActive) slot.classList.add('inactive-parent-slot'); else {  let isPastSlotForToday = isViewingToday && hour < currentSystemHour; if (isPastSlotForToday) { slot.classList.add('past'); slot.title = "Este horario ya pasó."; slot.onclick = null;  } else {  const client = bookedClientId ? getClientById(bookedClientId) : null; const clientNameStr = client ? client.nombreCliente : ""; slot.title = clientNameStr ? `Ocupado por ${clientNameStr}. Clic para gestionar.` : `Cama libre (Prof. hora: ${effectiveTeacherName || 'ninguno'}). Clic para gestionar.`; slot.addEventListener('click', () => handleSlotClick(bed, hour, hourKey, bookedClientId)); slot.classList.remove('slot-cancellation-critical'); if (bookedClientId && isSlotActive) { const classDateTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hour); const timeDifferenceInMilliseconds = classDateTime.getTime() - actualSystemDate.getTime(); const threeHoursInMilliseconds = 3 * 60 * 60 * 1000; if (timeDifferenceInMilliseconds > 0 && timeDifferenceInMilliseconds <= threeHoursInMilliseconds) { slot.classList.add('slot-cancellation-critical'); slot.title += " (¡Cancelación crítica!)"; } } } }  if (!isSlotActive && slot.onclick) { slot.onclick = null; slot.title = `Horario de las ${formatTimeForDisplay(hour)} desactivado.`;} scheduleContainer.appendChild(slot); } }); }
     
-    saveNewClientButton.addEventListener('click', () => { /* ... */ const name = newClientNameInput.value.trim(); const phone = newClientPhoneInput.value.trim(); const email = newClientEmailInput.value.trim(); const packageId = newClientPackageSelect.value; const purchaseDate = newClientPurchaseDateInput.value || formatDate(new Date()); if (!name || !packageId) { showFeedbackMessage("⚠️ Nombre y paquete requeridos.", "warning"); return; } const selectedPackage = PREDEFINED_PACKAGES.find(p => p.id === packageId); if (!selectedPackage) { showFeedbackMessage("⚠️ Paquete no válido.", "error"); return; } const newClient = { idUnicoCliente: generateClientId(), numeroClienteVisible: generateNextVisibleClientId(), nombreCliente: name, telefono: phone, correo: email, paqueteActivo: { idPaquete: packageId, nombrePaquete: selectedPackage.nombre, clasesCompradas: selectedPackage.clases, clasesRestantes: selectedPackage.clases, fechaDeCompra: purchaseDate, metodoPago: '', referenciaPago: '' } }; clients.push(newClient); saveClients(); showFeedbackMessage(`✔️ Cliente "${name}" (Nº ${newClient.numeroClienteVisible}) agregado.`, "success"); newClientNameInput.value = ''; newClientPhoneInput.value = ''; newClientEmailInput.value = ''; newClientPackageSelect.value = ''; newClientPurchaseDateInput.value = formatDate(new Date()); renderClientsList(); populateClientSelectorInBookingModal(); });
+    saveNewClientButton.addEventListener('click', () => {
+        const name = newClientNameInput.value.trim();
+        const phone = newClientPhoneInput.value.trim();
+        const email = newClientEmailInput.value.trim();
+        const packageId = newClientPackageSelect.value;
+        const purchaseDate = newClientPurchaseDateInput.value || formatDate(new Date());
+        if (!name || !packageId) {
+            showFeedbackMessage("⚠️ Nombre y paquete requeridos.", "warning");
+            return;
+        }
+        const selectedPackage = packages.find(p => p.id === packageId);
+        if (!selectedPackage) {
+            showFeedbackMessage("⚠️ Paquete no válido.", "error");
+            return;
+        }
+        const newClient = {
+            idUnicoCliente: generateClientId(),
+            numeroClienteVisible: generateNextVisibleClientId(),
+            nombreCliente: name,
+            telefono: phone,
+            correo: email,
+            paqueteActivo: {
+                idPaquete: packageId,
+                nombrePaquete: selectedPackage.nombre,
+                clasesCompradas: selectedPackage.clases,
+                clasesRestantes: selectedPackage.clases,
+                fechaDeCompra: purchaseDate,
+                metodoPago: '',
+                referenciaPago: ''
+            }
+        };
+        clients.push(newClient);
+        saveClients();
+        showFeedbackMessage(`✔️ Cliente "${name}" (Nº ${newClient.numeroClienteVisible}) agregado.`, "success");
+        newClientNameInput.value = '';
+        newClientPhoneInput.value = '';
+        newClientEmailInput.value = '';
+        newClientPackageSelect.value = '';
+        newClientPurchaseDateInput.value = formatDate(new Date());
+        renderClientsList();
+        populateClientSelectorInBookingModal();
+    });
     searchClientInput.addEventListener('input', function() { renderClientsList(this.value); });
     function handleDeleteClient(clientId) { /* ... */ const client = getClientById(clientId); if (!client) { showFeedbackMessage("⚠️ Cliente no encontrado.", "error"); return; } if (confirm(`¿ELIMINAR a ${client.nombreCliente} (Nº ${client.numeroClienteVisible})?\n\nPERMANENTE. Reservas en agenda actual mostrarán "Cliente Desconocido".`)) { clients = clients.filter(c => c.idUnicoCliente !== clientId); saveClients(); const dateKey = formatDate(currentDate); const dayData = getDayData(dateKey); let bookingsUpdated = false; for (const slotId in dayData.bookings) { if (dayData.bookings[slotId] === clientId) { delete dayData.bookings[slotId]; bookingsUpdated = true; } } if (bookingsUpdated) saveDayData(dateKey, dayData); renderClientsList(); populateClientSelectorInBookingModal(); renderSchedule(); showFeedbackMessage(`🗑️ Cliente "${client.nombreCliente}" eliminado.`, "info"); } }
     function openEditClientModal(clientId) { /* ... */ currentEditingClientIdForModal = clientId; const client = getClientById(clientId); if (!client) { showFeedbackMessage("⚠️ Error: Cliente no encontrado.", "error"); return; } editClientIdInput.value = client.idUnicoCliente; editClientVisibleIdDisplay.textContent = client.numeroClienteVisible || 'S/N'; editClientNameInput.value = client.nombreCliente; editClientPhoneInput.value = client.telefono || ""; editClientEmailInput.value = client.correo || "";  editClientCurrentPackageInfo.innerHTML = `Paquete: <strong>${client.paqueteActivo.nombrePaquete}</strong><br>Clases Restantes: <strong>${client.paqueteActivo.clasesRestantes}</strong><br>Comprado: ${getDisplayableDate(new Date(client.paqueteActivo.fechaDeCompra), {day:'numeric',month:'short',year:'numeric'})}<br>Pago: ${client.paqueteActivo.metodoPago || 'N/A'} (Ref: ${client.paqueteActivo.referenciaPago || 'N/A'})`; if(client.paqueteActivo.clasesRestantes <=0) editClientCurrentPackageInfo.classList.add('warning'); else editClientCurrentPackageInfo.classList.remove('warning'); populatePackageDropdown(editClientNewPackageSelect, false); editClientNewPackageSelect.insertAdjacentHTML('afterbegin', '<option value="">-- No cambiar/agregar paquete --</option>'); editClientNewPackageSelect.value = ""; editClientNewPackagePurchaseDateInput.value = formatDate(new Date()); editClientPaymentMethodInput.value = ""; editClientPaymentReferenceInput.value = ""; editClientModal.style.display = 'flex'; editClientNameInput.focus(); }
     function closeEditClientModal() { editClientModal.style.display = 'none'; currentEditingClientIdForModal = null;}
-    function updateClientPackageButtonHandler() { /* ... */ if (!currentEditingClientIdForModal) return; const clientIndex = clients.findIndex(c => c.idUnicoCliente === currentEditingClientIdForModal); if (clientIndex === -1) { showFeedbackMessage("⚠️ Error al actualizar.", "error"); return; } const clientToUpdate = clients[clientIndex]; const updatedName = editClientNameInput.value.trim(); const updatedPhone = editClientPhoneInput.value.trim(); const updatedEmail = editClientEmailInput.value.trim();   if (!updatedName) { showFeedbackMessage("⚠️ El nombre no puede estar vacío.", "warning"); return; } const newPackageId = editClientNewPackageSelect.value; const newPurchaseDate = editClientNewPackagePurchaseDateInput.value || formatDate(new Date()); const newPaymentMethod = editClientPaymentMethodInput.value; const newPaymentReference = editClientPaymentReferenceInput.value.trim(); let feedback = `✔️ Datos de "${updatedName}" actualizados.`; let packageActuallyChanged = false; if (newPackageId) { const selectedPackage = PREDEFINED_PACKAGES.find(p => p.id === newPackageId); if (selectedPackage) { const oldClassesRemaining = clientToUpdate.paqueteActivo.clasesRestantes; const classesFromNewPackage = selectedPackage.clases; const newTotalClassesAfterRecharge = (oldClassesRemaining < 0 ? 0 : oldClassesRemaining) + classesFromNewPackage; if (!confirm(`Vas a agregar el paquete "${selectedPackage.nombre}" (${classesFromNewPackage} clases) a ${updatedName}.\nSus clases restantes pasarán de ${oldClassesRemaining} a ${newTotalClassesAfterRecharge}.\n\nMétodo de Pago: ${newPaymentMethod || "No especificado"}\nReferencia: ${newPaymentReference || "Ninguna"}\n\n¿ESTÁS SEGURA?`)) { return; } clientToUpdate.paqueteActivo = { idPaquete: newPackageId, nombrePaquete: selectedPackage.nombre, clasesCompradas: classesFromNewPackage, clasesRestantes: newTotalClassesAfterRecharge, fechaDeCompra: newPurchaseDate, metodoPago: newPaymentMethod, referenciaPago: newPaymentReference }; feedback = `✔️ Paquete de "${updatedName}" actualizado. Ahora tiene ${newTotalClassesAfterRecharge} clases.`; packageActuallyChanged = true; } else { showFeedbackMessage("⚠️ Nuevo paquete no válido.", "error"); return; } } clientToUpdate.nombreCliente = updatedName; clientToUpdate.telefono = updatedPhone; clientToUpdate.correo = updatedEmail; saveClients(); renderClientsList(); populateClientSelectorInBookingModal(); renderSchedule(); showFeedbackMessage(feedback, (packageActuallyChanged || clientToUpdate.nombreCliente !== updatedName || clientToUpdate.telefono !== updatedPhone || clientToUpdate.correo !== updatedEmail) ? "success" : "info", 3000); closeEditClientModal(); }
+    function updateClientPackageButtonHandler() { /* ... */ if (!currentEditingClientIdForModal) return; const clientIndex = clients.findIndex(c => c.idUnicoCliente === currentEditingClientIdForModal); if (clientIndex === -1) { showFeedbackMessage("⚠️ Error al actualizar.", "error"); return; } const clientToUpdate = clients[clientIndex]; const updatedName = editClientNameInput.value.trim(); const updatedPhone = editClientPhoneInput.value.trim(); const updatedEmail = editClientEmailInput.value.trim();   if (!updatedName) { showFeedbackMessage("⚠️ El nombre no puede estar vacío.", "warning"); return; } const newPackageId = editClientNewPackageSelect.value; const newPurchaseDate = editClientNewPackagePurchaseDateInput.value || formatDate(new Date()); const newPaymentMethod = editClientPaymentMethodInput.value; const newPaymentReference = editClientPaymentReferenceInput.value.trim(); let feedback = `✔️ Datos de "${updatedName}" actualizados.`; let packageActuallyChanged = false; if (newPackageId) { const selectedPackage = packages.find(p => p.id === newPackageId); if (selectedPackage) { const oldClassesRemaining = clientToUpdate.paqueteActivo.clasesRestantes; const classesFromNewPackage = selectedPackage.clases; const newTotalClassesAfterRecharge = (oldClassesRemaining < 0 ? 0 : oldClassesRemaining) + classesFromNewPackage; if (!confirm(`Vas a agregar el paquete "${selectedPackage.nombre}" (${classesFromNewPackage} clases) a ${updatedName}.\nSus clases restantes pasarán de ${oldClassesRemaining} a ${newTotalClassesAfterRecharge}.\n\nMétodo de Pago: ${newPaymentMethod || "No especificado"}\nReferencia: ${newPaymentReference || "Ninguna"}\n\n¿ESTÁS SEGURA?`)) { return; } clientToUpdate.paqueteActivo = { idPaquete: newPackageId, nombrePaquete: selectedPackage.nombre, clasesCompradas: classesFromNewPackage, clasesRestantes: newTotalClassesAfterRecharge, fechaDeCompra: newPurchaseDate, metodoPago: newPaymentMethod, referenciaPago: newPaymentReference }; feedback = `✔️ Paquete de "${updatedName}" actualizado. Ahora tiene ${newTotalClassesAfterRecharge} clases.`; packageActuallyChanged = true; } else { showFeedbackMessage("⚠️ Nuevo paquete no válido.", "error"); return; } } clientToUpdate.nombreCliente = updatedName; clientToUpdate.telefono = updatedPhone; clientToUpdate.correo = updatedEmail; saveClients(); renderClientsList(); populateClientSelectorInBookingModal(); renderSchedule(); showFeedbackMessage(feedback, (packageActuallyChanged || clientToUpdate.nombreCliente !== updatedName || clientToUpdate.telefono !== updatedPhone || clientToUpdate.correo !== updatedEmail) ? "success" : "info", 3000); closeEditClientModal(); }
     updateClientPackageButton.addEventListener('click', updateClientPackageButtonHandler);
 
     // --- MODAL VER CLASES AGENDADAS ---
@@ -396,15 +521,18 @@ document.addEventListener('DOMContentLoaded', () => {
     closeEditClientModalButton.addEventListener('click', closeEditClientModal);
     closeExportDataModalButton.addEventListener('click', closeExportDataModal);
     closeViewBookedClassesModalButton.addEventListener('click', closeViewBookedClassesModal);
+    closePackagesModalButton.addEventListener('click', closePackagesModal);
     
     quickHelpButton.addEventListener('click', openQuickHelpModal);
-    manageClientsButton.addEventListener('click', showClientManagementView); 
+    managePackagesButton.addEventListener('click', openPackagesModal);
+    addPackageButton.addEventListener('click', addPackageFromModal);
+    manageClientsButton.addEventListener('click', showClientManagementView);
     backToScheduleButton.addEventListener('click', showScheduleView); 
     quickAddClientBtnFromBooking.addEventListener('click', () => { closeBookingModal(); showClientManagementView(); setTimeout(() => newClientNameInput.focus(), 50); });
     exportDataButton.addEventListener('click', openExportDataModal);
 
     window.addEventListener('click', (event) => { 
-        const modalsToCloseOnClickOutside = [bookingModal, summaryTextModal, quickHelpModal, slotStatusConfigModal, reminderTextModal, weeklyRepeatModal, editClientModal, exportDataModal, viewBookedClassesModal];
+        const modalsToCloseOnClickOutside = [bookingModal, summaryTextModal, quickHelpModal, slotStatusConfigModal, reminderTextModal, weeklyRepeatModal, editClientModal, exportDataModal, viewBookedClassesModal, packagesModal];
         if (clientManagementView.style.display === 'none') { // Solo si NO estamos en la vista de gestión de clientes
             modalsToCloseOnClickOutside.forEach(modal => { if (event.target === modal) modal.style.display = 'none'; });
         } else { // Si estamos en la vista de gestión de clientes, solo permitir cerrar modales específicos
@@ -422,17 +550,20 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (bookingModal.style.display === 'flex') closeBookingModal(); 
             else if (summaryTextModal.style.display === 'flex') closeSummaryModal();
             else if (quickHelpModal.style.display === 'flex') closeQuickHelpModal(); 
-            else if (slotStatusConfigModal.style.display === 'flex') closeSlotStatusConfigModal(); 
-            else if (reminderTextModal.style.display === 'flex') closeReminderTextModal(); 
-            else if (weeklyRepeatModal.style.display === 'flex') closeWeeklyRepeatModal(); 
+            else if (slotStatusConfigModal.style.display === 'flex') closeSlotStatusConfigModal();
+            else if (reminderTextModal.style.display === 'flex') closeReminderTextModal();
+            else if (weeklyRepeatModal.style.display === 'flex') closeWeeklyRepeatModal();
+            else if (packagesModal.style.display === 'flex') closePackagesModal();
         }
     });
     
     // --- INICIALIZACIÓN ---
     function initializeApp() {
-        loadClients(); 
+        loadPackages();
+        loadClients();
+        populatePackageDropdown(newClientPackageSelect);
         updateDateDisplay();
-        renderSchedule(); 
+        renderSchedule();
         showFeedbackMessage("✨ ¡Súper Agenda de Alizen Pilates Lista! ✨", "success", 2000);
     }
     showSummaryButton.addEventListener('click', generateAndShowAvailabilitySummary);

@@ -14,7 +14,8 @@
             <button id="next-day" title="Día siguiente">MAÑANA ▶</button>
             <input type="date" id="date-picker" title="Seleccionar fecha específica">
             <button id="manage-clients-button" title="Gestionar Clientes y sus Paquetes">👤 Clientes</button>
-            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button> 
+            <button id="manage-packages-button" title="Gestionar paquetes disponibles">⚙️ Paquetes</button>
+            <button id="show-summary-button" title="Generar resumen de disponibilidad para copiar a WhatsApp">📝 Ver Disponibilidad</button>
             <button id="export-data-button" title="Exportar datos de clientes y agenda para respaldo">📤 Datos y Respaldo</button>
         </nav>
     </header>
@@ -82,6 +83,34 @@
             <h3 class="modal-title">Clases Agendadas para <span id="view-booked-client-name"></span></h3>
             <div id="booked-classes-list-container" class="booked-classes-list">
                 </div>
+        </div>
+    </div>
+
+    <div id="packages-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close-button" id="close-packages-modal-button" title="Cerrar">&times;</span>
+            <h3 class="modal-title">⚙️ Gestionar Paquetes</h3>
+            <div class="modal-input-group">
+                <label for="package-name">Nombre del Paquete:</label>
+                <input type="text" id="package-name">
+            </div>
+            <div class="modal-input-group">
+                <label for="package-classes">Número de Clases:</label>
+                <input type="number" id="package-classes" min="1">
+            </div>
+            <div class="modal-input-group">
+                <label for="package-price">Precio:</label>
+                <input type="number" id="package-price" min="0">
+            </div>
+            <button id="add-package-button" class="action-button success-action">➕ Agregar</button>
+            <div class="packages-table-container">
+                <table id="packages-table">
+                    <thead>
+                        <tr><th>Nombre</th><th>Clases</th><th>Precio</th><th></th></tr>
+                    </thead>
+                    <tbody id="packages-table-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

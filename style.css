@@ -229,6 +229,49 @@ main#schedule-view { width: 98%; max-width: 1400px; margin: 20px auto 80px auto;
     padding: 20px;
 }
 
+/* ----- Gestión de Paquetes ----- */
+#packages-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+#packages-table th,
+#packages-table td {
+    border-bottom: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;
+}
+#packages-table td.actions {
+    text-align: center;
+    width: 60px;
+}
+.delete-package-btn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.delete-package-btn:hover {
+    background-color: #c82333;
+}
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    #date-navigation button { padding: 6px 8px; font-size: 0.75em; }
+    #date-navigation h2 { font-size: 1em; min-width: 120px; }
+    #date-picker { font-size: 0.75em; }
+    .slot { min-height: 50px; }
+}
+
+
+#booked-classes-list-container .no-booked-classes {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+}
+
 /* Estilos para la gestión de paquetes */
 #packages-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 #packages-table th, #packages-table td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }

@@ -10,10 +10,16 @@ Aplicación web sencilla para gestionar las camas y clientes de un estudio de Pi
 
 Toda la información se guarda en el navegador mediante *localStorage*.
 
+Los paquetes configurados también se persisten allí.
+
+
 ## Funcionalidades principales
 
 - Agenda diaria de horarios y camas.
 - Registro de clientes con paquetes de clases.
+
+- Configuración dinámica de paquetes de clases.
+
 
 
 - Configuración de paquetes de clases desde la interfaz.
@@ -23,6 +29,7 @@ Toda la información se guarda en el navegador mediante *localStorage*.
 
 
 - Configuración y edición de paquetes de clases desde la interfaz.
+
 
 
 

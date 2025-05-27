@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const eveningHours = [16, 17, 18, 19, 20]; 
     const allTimeSlots = [...morningHours, ...eveningHours].sort((a, b) => a - b);
 
-    const PREDEFINED_PACKAGES = [
+    const DEFAULT_PACKAGES = [
         { id: 'prueba', nombre: "Clase de prueba", clases: 1, precio: 150 },
         { id: 'clase1', nombre: "1 Clase", clases: 1, precio: 200 },
         { id: 'clases4', nombre: "4 Clases", clases: 4, precio: 790 },
@@ -14,11 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'clases20', nombre: "20 Clases", clases: 20, precio: 2740 }
     ];
 
+    let packages = [];
+
     let currentDate = new Date(); 
     let clients = []; 
 
     const LS_PREFIX_DAY = "ALIZENPILATES_DIA_";
     const LS_CLIENTS_KEY = "ALIZENPILATES_CLIENTES";
+    const LS_PACKAGES_KEY = "ALIZENPILATES_PACKAGES";
 
     // --- REFERENCIAS A ELEMENTOS DEL DOM ---
     // (Todas las referencias que ya teníamos)
@@ -31,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const datePicker = document.getElementById('date-picker');
     const scheduleContainer = document.getElementById('schedule-container');
     const showSummaryButton = document.getElementById('show-summary-button');
-    const manageClientsButton = document.getElementById('manage-clients-button'); 
+    const manageClientsButton = document.getElementById('manage-clients-button');
+    const managePackagesButton = document.getElementById('manage-packages-button');
     const exportDataButton = document.getElementById('export-data-button');
     const bookingModal = document.getElementById('booking-modal'); 
     const closeBookingModalButton = document.getElementById('close-booking-modal-button');
@@ -76,9 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryModalTitle = document.getElementById('summary-modal-title');
     const whatsappSummaryTextElement = document.getElementById('whatsapp-summary-text');
     const copySummaryButton = document.getElementById('copy-summary-button');
-    const quickHelpButton = document.getElementById('quick-help-button'); 
+    const quickHelpButton = document.getElementById('quick-help-button');
     const quickHelpModal = document.getElementById('quick-help-modal');
     const closeQuickHelpModalButton = document.getElementById('close-quick-help-modal-button');
+    const packagesModal = document.getElementById('packages-modal');
+    const closePackagesModalButton = document.getElementById('close-packages-modal-button');
+    const packagesTbody = document.getElementById('packages-tbody');
+    const packageNameInput = document.getElementById('package-name-input');
+    const packageClassesInput = document.getElementById('package-classes-input');
+    const packagePriceInput = document.getElementById('package-price-input');
+    const addPackageButton = document.getElementById('add-package-button');
     const slotStatusConfigModal = document.getElementById('slot-status-config-modal'); 
     const closeSlotStatusConfigModalButton = document.getElementById('close-slot-status-config-modal-button');
     const slotStatusConfigTimeDisplay = document.getElementById('slot-status-config-time-display');
@@ -127,11 +138,39 @@ document.addEventListener('DOMContentLoaded', () => {
     function showFeedbackMessage(messageText, type = 'info', duration = 2500) { feedbackMessage.textContent = messageText; feedbackMessageBox.className = ''; feedbackMessageBox.classList.add(type); feedbackOverlay.classList.add('show'); setTimeout(() => { feedbackOverlay.classList.remove('show'); }, duration); }
     function generateClientId() { return 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
     function generateNextVisibleClientId() { let nextId = 101; if (clients.length > 0) { const existingIds = clients.map(c => c.numeroClienteVisible || 0).filter(id => id > 0); if (existingIds.length > 0) { const maxId = Math.max(...existingIds); if (maxId >= nextId) nextId = maxId + 1; } } return nextId; }
-    function populatePackageDropdown(selectElement, addDefaultOption = true) { if (!PREDEFINED_PACKAGES) { console.error("PREDEFINED_PACKAGES no está definido."); return; } selectElement.innerHTML = addDefaultOption ? '<option value="">-- Seleccionar Paquete --</option>' : ''; PREDEFINED_PACKAGES.forEach(pkg => { const option = document.createElement('option'); option.value = pkg.id; option.textContent = `${pkg.nombre} (${pkg.clases} clase${pkg.clases > 1 ? 's' : ''})`; selectElement.appendChild(option); }); }
+    function populatePackageDropdown(selectElement, addDefaultOption = true) {
+        selectElement.innerHTML = addDefaultOption ? '<option value="">-- Seleccionar Paquete --</option>' : '';
+        packages.forEach(pkg => {
+            const option = document.createElement('option');
+            option.value = pkg.id;
+            option.textContent = `${pkg.nombre} (${pkg.clases} clase${pkg.clases > 1 ? 's' : ''})`;
+            selectElement.appendChild(option);
+        });
+    }
     
     // --- MANEJO DE DATOS DEL DÍA (LocalStorage) ---
     function getDayData(dateKey) { const dataString = localStorage.getItem(LS_PREFIX_DAY + dateKey); let data = { slotTeachers: {}, activeSlots: {}, bookings: {} }; if (dataString) { try { const parsedData = JSON.parse(dataString); data.slotTeachers = parsedData.slotTeachers || {}; data.activeSlots = parsedData.activeSlots || {}; data.bookings = parsedData.bookings || {}; } catch (e) { console.error("Error al parsear datos del día:", dateKey, e); } } allTimeSlots.forEach(hour => { const hourKey = formatHourForSlotKey(hour); if (typeof data.activeSlots[hourKey] === 'undefined') data.activeSlots[hourKey] = true; if (typeof data.slotTeachers[hourKey] === 'undefined') data.slotTeachers[hourKey] = ""; }); return data; }
     function saveDayData(dateKey, data) { try { localStorage.setItem(LS_PREFIX_DAY + dateKey, JSON.stringify(data)); } catch (e) { console.error("Error al guardar datos del día:", e); showFeedbackMessage("⚠️ Error al guardar datos del día.", "error"); } }
+
+    // --- MANEJO DE PAQUETES (LocalStorage) ---
+    function loadPackages() {
+        const data = localStorage.getItem(LS_PACKAGES_KEY);
+        if (data) {
+            try { packages = JSON.parse(data); } catch (e) { console.error('Error al cargar paquetes', e); packages = DEFAULT_PACKAGES.slice(); }
+        } else {
+            packages = DEFAULT_PACKAGES.slice();
+            savePackages();
+        }
+    }
+
+    function savePackages() {
+        try {
+            localStorage.setItem(LS_PACKAGES_KEY, JSON.stringify(packages));
+        } catch (e) {
+            console.error('Error al guardar paquetes', e);
+            showFeedbackMessage('⚠️ Error al guardar paquetes.', 'error');
+        }
+    }
     
     // --- MANEJO DE DATOS DE CLIENTES (LocalStorage) ---
     function loadClients() { const clientsDataString = localStorage.getItem(LS_CLIENTS_KEY); clients = clientsDataString ? JSON.parse(clientsDataString) : []; let maxCurrentId = 100; let migrationNeeded = false; clients.forEach(client => { if (client.numeroClienteVisible && typeof client.numeroClienteVisible === 'number' && client.numeroClienteVisible > maxCurrentId) { maxCurrentId = client.numeroClienteVisible; } if (!client.paqueteActivo) { client.paqueteActivo = { idPaquete: '', nombrePaquete: 'N/A', clasesCompradas: 0, clasesRestantes: 0, fechaDeCompra: formatDate(new Date()), metodoPago: '', referenciaPago: '' }; migrationNeeded = true; } else { if (typeof client.paqueteActivo.metodoPago === 'undefined') client.paqueteActivo.metodoPago = ''; if (typeof client.paqueteActivo.referenciaPago === 'undefined') client.paqueteActivo.referenciaPago = ''; } if (typeof client.telefono === 'undefined') client.telefono = ''; if (typeof client.correo === 'undefined') client.correo = ''; }); clients.forEach(client => { if (!client.numeroClienteVisible) { maxCurrentId++; client.numeroClienteVisible = maxCurrentId; migrationNeeded = true; } }); if (migrationNeeded) saveClients(); }
@@ -143,6 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function showScheduleView() { scheduleView.style.display = 'block'; clientManagementView.style.display = 'none'; renderSchedule();  }
     function showClientManagementView() { scheduleView.style.display = 'none'; clientManagementView.style.display = 'flex'; populatePackageDropdown(newClientPackageSelect); newClientPurchaseDateInput.value = formatDate(new Date()); renderClientsList(); newClientNameInput.value = ""; newClientPhoneInput.value = ""; newClientEmailInput.value = ""; searchClientInput.value = ""; newClientNameInput.focus(); }
+
+    function renderPackagesTable() {
+        packagesTbody.innerHTML = '';
+        packages.forEach(pkg => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${pkg.nombre}</td><td>${pkg.clases}</td><td>$${pkg.precio}</td><td class="actions"><button class="delete-package-btn" data-id="${pkg.id}">🗑️</button></td>`;
+            packagesTbody.appendChild(tr);
+        });
+    }
+
+    function openPackagesModal() {
+        renderPackagesTable();
+        packageNameInput.value = '';
+        packageClassesInput.value = '';
+        packagePriceInput.value = '';
+        packagesModal.style.display = 'flex';
+    }
 
     async function getFutureBookingsDetailsForClient(clientId) { // Modificada para devolver también dateKey y hourKey
         const bookingsDetails = [];
@@ -382,8 +438,35 @@ document.addEventListener('DOMContentLoaded', () => {
     exportClientsJsonButton.addEventListener('click', () => { const clientsJSON = JSON.stringify(clients, null, 2); exportedDataTextarea.value = clientsJSON; showFeedbackMessage("Respaldo Técnico de Clientes (JSON) generado.", "info", 3000); });
     function generateAgendaData(isJsonFormat) { const period = exportAgendaPeriodSelect.value; let startDate = new Date(); startDate.setHours(0,0,0,0); let endDate = new Date(startDate); endDate.setHours(23,59,59,999);  const todayForCompare = new Date(startDate); switch(period) { case 'next7days': endDate.setDate(todayForCompare.getDate() + 6); break; case 'next30days': endDate.setDate(todayForCompare.getDate() + 29); break; case 'currentMonth': startDate = new Date(todayForCompare.getFullYear(), todayForCompare.getMonth(), 1); endDate = new Date(todayForCompare.getFullYear(), todayForCompare.getMonth() + 1, 0); break; case 'nextMonth': startDate = new Date(todayForCompare.getFullYear(), todayForCompare.getMonth() + 1, 1); endDate = new Date(todayForCompare.getFullYear(), todayForCompare.getMonth() + 2, 0); break; } let outputText = ""; if (isJsonFormat) { let agendaDataForExport = []; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { const dateKey = formatDate(d); const dayData = getDayData(dateKey); let hasData = Object.keys(dayData.bookings).length > 0; if (!hasData) { for(const hourKey in dayData.slotTeachers){ if(dayData.slotTeachers[hourKey] && dayData.activeSlots[hourKey]){ hasData = true; break; } } } if (hasData) { agendaDataForExport.push({ date: dateKey, ...dayData }); } } outputText = JSON.stringify(agendaDataForExport, null, 2); } else { outputText = `Agenda Ocupada - ALIZEN PILATES\nPeriodo: ${getDisplayableDate(startDate, {day:'numeric',month:'long'})} - ${getDisplayableDate(endDate, {day:'numeric',month:'long', year:'numeric'})}\n-------------------------------------\n`; let foundAnyBookingInPeriod = false; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { const dateKey = formatDate(d); const dayData = getDayData(dateKey); let dailyBookingsOutput = ""; let dailyBookingsFoundThisDay = false; allTimeSlots.forEach(hour => { const hourKey = formatHourForSlotKey(hour); if (!dayData.activeSlots[hourKey]) return; const effectiveTeacherName = getEffectiveTeacherForSlot(hourKey, dayData); let bedsBookedInThisSlotContent = ""; let occupiedBedsCountThisSlot = 0; for (let bed = 1; bed <= bedCount; bed++) { const slotId = `bed${bed}-${hourKey}`; const bookedClientId = dayData.bookings[slotId]; if (bookedClientId) { occupiedBedsCountThisSlot++; const client = getClientById(bookedClientId); const clientNameForDisplay = client ? client.nombreCliente : "Cliente Desconocido"; const clientNumberDisplay = client && client.numeroClienteVisible ? `(Nº ${client.numeroClienteVisible})` : ""; bedsBookedInThisSlotContent += `      Cama ${bed}: ${clientNameForDisplay} ${clientNumberDisplay}\n`; } } if (occupiedBedsCountThisSlot > 0) { if (!dailyBookingsFoundThisDay) { dailyBookingsOutput += `\n${getDisplayableDate(d, {weekday: 'long', day: 'numeric', month: 'long'})}:\n`; } dailyBookingsFoundThisDay = true; foundAnyBookingInPeriod = true; dailyBookingsOutput += `  - ${formatTimeForDisplay(hour)}`; if (effectiveTeacherName) dailyBookingsOutput += ` (Prof: ${effectiveTeacherName})`; dailyBookingsOutput += ` (Camas ocupadas: ${occupiedBedsCountThisSlot}):\n`; dailyBookingsOutput += bedsBookedInThisSlotContent; } }); if (dailyBookingsFoundThisDay) { outputText += dailyBookingsOutput; } } if (!foundAnyBookingInPeriod) outputText += "\nNo se encontraron reservas en el periodo seleccionado."; } exportedDataTextarea.value = outputText; showFeedbackMessage("Datos de agenda generados. ¡Copia el texto!", "info", 3000); }
     exportAgendaReadableButton.addEventListener('click', () => generateAgendaData(false)); 
-    exportAgendaJsonButton.addEventListener('click', () => generateAgendaData(true)); 
+    exportAgendaJsonButton.addEventListener('click', () => generateAgendaData(true));
     copyExportedDataButton.addEventListener('click', () => { if (!exportedDataTextarea.value) { showFeedbackMessage("⚠️ No hay datos para copiar.", "warning"); return; } exportedDataTextarea.select(); try { document.execCommand('copy'); showFeedbackMessage("📋 ¡Texto copiado!", "success"); } catch (err) { showFeedbackMessage("⚠️ Error al copiar. Usa Ctrl+C.", "error"); console.error('Error al copiar con execCommand: ', err); } });
+
+    addPackageButton.addEventListener('click', () => {
+        const name = packageNameInput.value.trim();
+        const classes = parseInt(packageClassesInput.value, 10);
+        const price = parseFloat(packagePriceInput.value);
+        if (!name || !classes || isNaN(price)) { showFeedbackMessage('⚠️ Datos inválidos.', 'warning'); return; }
+        const id = name.toLowerCase().replace(/\s+/g, '') + '_' + Date.now();
+        packages.push({ id, nombre: name, clases: classes, precio: price });
+        savePackages();
+        populatePackageDropdown(newClientPackageSelect);
+        populatePackageDropdown(editClientNewPackageSelect, false);
+        renderPackagesTable();
+        packageNameInput.value = '';
+        packageClassesInput.value = '';
+        packagePriceInput.value = '';
+    });
+
+    packagesTbody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-package-btn')) {
+            const id = e.target.getAttribute('data-id');
+            packages = packages.filter(p => p.id !== id);
+            savePackages();
+            populatePackageDropdown(newClientPackageSelect);
+            populatePackageDropdown(editClientNewPackageSelect, false);
+            renderPackagesTable();
+        }
+    });
     
 
     // --- EVENT LISTENERS GENERALES ---
@@ -396,15 +479,17 @@ document.addEventListener('DOMContentLoaded', () => {
     closeEditClientModalButton.addEventListener('click', closeEditClientModal);
     closeExportDataModalButton.addEventListener('click', closeExportDataModal);
     closeViewBookedClassesModalButton.addEventListener('click', closeViewBookedClassesModal);
+    closePackagesModalButton.addEventListener('click', () => { packagesModal.style.display = 'none'; });
     
     quickHelpButton.addEventListener('click', openQuickHelpModal);
-    manageClientsButton.addEventListener('click', showClientManagementView); 
-    backToScheduleButton.addEventListener('click', showScheduleView); 
+    managePackagesButton.addEventListener('click', openPackagesModal);
+    manageClientsButton.addEventListener('click', showClientManagementView);
+    backToScheduleButton.addEventListener('click', showScheduleView);
     quickAddClientBtnFromBooking.addEventListener('click', () => { closeBookingModal(); showClientManagementView(); setTimeout(() => newClientNameInput.focus(), 50); });
     exportDataButton.addEventListener('click', openExportDataModal);
 
     window.addEventListener('click', (event) => { 
-        const modalsToCloseOnClickOutside = [bookingModal, summaryTextModal, quickHelpModal, slotStatusConfigModal, reminderTextModal, weeklyRepeatModal, editClientModal, exportDataModal, viewBookedClassesModal];
+    const modalsToCloseOnClickOutside = [bookingModal, summaryTextModal, packagesModal, quickHelpModal, slotStatusConfigModal, reminderTextModal, weeklyRepeatModal, editClientModal, exportDataModal, viewBookedClassesModal];
         if (clientManagementView.style.display === 'none') { // Solo si NO estamos en la vista de gestión de clientes
             modalsToCloseOnClickOutside.forEach(modal => { if (event.target === modal) modal.style.display = 'none'; });
         } else { // Si estamos en la vista de gestión de clientes, solo permitir cerrar modales específicos
@@ -430,7 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- INICIALIZACIÓN ---
     function initializeApp() {
-        loadClients(); 
+        loadPackages();
+        loadClients();
         updateDateDisplay();
         renderSchedule(); 
         showFeedbackMessage("✨ ¡Súper Agenda de Alizen Pilates Lista! ✨", "success", 2000);
